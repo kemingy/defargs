@@ -1,2 +1,3 @@
-# argstruct
-argument parsing with structured class
+# ArgStruct
+
+Argument parsing with structured class.
