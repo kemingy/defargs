@@ -1,4 +1,4 @@
-PY_SOURCE=src tests
+PY_SOURCE=argstruct tests
 
 dev:
 	@pip install -e .[dev]
@@ -11,7 +11,7 @@ format:
 	@ruff format ${PY_SOURCE}
 
 clean:
-	@-rm -rf dist build src/__pycache__ src/*.egg-info src/argstruct/__version__.py
+	@-rm -rf dist build __pycache__ *.egg-info argstruct/__version__.py
 
 build:
 	@python -m build

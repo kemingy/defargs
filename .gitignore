@@ -160,4 +160,4 @@ cython_debug/
 .idea/
 .vscode/
 .ruff_cache/
-src/argstruct/__version__.py
+argstruct/__version__.py
