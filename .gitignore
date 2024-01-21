@@ -160,4 +160,4 @@ cython_debug/
 .idea/
 .vscode/
 .ruff_cache/
-argstruct/__version__.py
+defargs/__version__.py

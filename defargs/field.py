@@ -58,3 +58,12 @@ def field(
         short=short,
         help=help,
     )
+
+
+@dataclass
+class Config:
+    name: Optional[str] = None
+    config_file: Optional[str] = None
+    from_env: bool = False
+    env_prefix: Optional[str] = None
+
