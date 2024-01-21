@@ -1,5 +1,5 @@
 [project]
-name = "argstruct"
+name = "defargs"
 dynamic = ["version"]
 description = "Argument parsing with structured class."
 authors = [{ name = "Keming", email = "kemingy94@gmail.com" }]
@@ -18,7 +18,7 @@ dev = [
     "pytest~=7.4",
 ]
 [project.urls]
-"Homepage" = "https://github.com/kemingy/argstruct"
+"Homepage" = "https://github.com/kemingy/defargs"
 [project.scripts]
 
 [build-system]
@@ -34,6 +34,6 @@ target-version = "py38"
 select = ["E", "F", "G", "B", "I", "SIM", "TID", "PL", "RUF"]
 ignore = ["E501"]
 [tool.ruff.lint.isort]
-known-first-party = ["argstruct"]
+known-first-party = ["defargs"]
 [tool.ruff.pylint]
 max-args = 7

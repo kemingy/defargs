@@ -4,13 +4,14 @@ import sys
 from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
-    from argstruct.field import Field
+    from defargs.field import Config, Field
 
 
 class CommandParser:
-    def __init__(self, fields: list[Field]) -> None:
+    def __init__(self, fields: list[Field], config: Config) -> None:
         self.arguments: dict[str, Any] = {}
         self.known_keys: set[str] = set()
+        self.unknown_fields: list[str] = []
         self.short_key_map: dict[str, str] = {}
         self.key_type_map: dict[str, type] = {}
 
@@ -51,6 +52,13 @@ class CommandParser:
 
             if "=" in key:
                 key, value = key.split("=", 1)
+            elif key not in self.key_type_map:
+                # unknown key
+                self.unknown_fields.append(key)
+                # clean the associated values
+                if index + 1 < length and not args[index + 1].startswith("-"):
+                    index += 1
+                    self.unknown_fields.append(args[index])
             elif self.key_type_map[key] is bool:
                 value = True
             elif index + 1 < length:
