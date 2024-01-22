@@ -30,7 +30,6 @@ def show_help_message(name: str, description: Optional[str], fields: dict[str, F
         print()
 
 
-
 class DefArgs:
     __args_config__: Config
 
@@ -95,16 +94,17 @@ class DefArgs:
         """
         fields = cls.__struct_fields__()
         parser = CommandParser(fields.values(), cls.__args_config__)
-        args = parser.parse()
+        known_args = parser.parse()
 
-        if "help" in args or len(args) == 0:
+        # `help` is a reserved keyword
+        if known_args["help"] or len(known_args) == 1:
             show_help_message(
                 cls.__args_config__.name or cls.__name__, cls.__doc__, fields
             )
             return
 
         instance = cls()
-        for key, value in args.items():
+        for key, value in known_args.items():
             if key not in fields:
                 continue
             setattr(instance, key, value)
@@ -118,6 +118,7 @@ class DefArgs:
 if __name__ == "__main__":
 
     class MyArg(DefArgs, name="cli", from_env=True, env_prefix="KEY"):
-        pass
+        name: str
+        enabled: bool
 
     MyArg.parse_args()

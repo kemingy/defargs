@@ -27,6 +27,7 @@ def test_basic(monkeypatch):
             "1",
             "-c",
             "2",
+            "--this-should-be-ignored",
             "--unknown",
             "unknown",
         ],

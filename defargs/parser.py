@@ -1,17 +1,51 @@
 from __future__ import annotations
 
+import json
 import sys
-from typing import TYPE_CHECKING, Any, Optional
+from os import environ
+from pathlib import Path
+from typing import Any, Optional
 
-if TYPE_CHECKING:
-    from defargs.field import Config, Field
+from defargs.field import NODEFAULT, Config, Field
+
+
+def json_loader(file: Path) -> dict[str, Any]:
+    with open(file, "r") as f:
+        return json.load(f)
+
+
+def yaml_loader(file: Path) -> dict[str, Any]:
+    import yaml
+
+    with open(file, "r") as f:
+        return yaml.load(f)
+
+
+def toml_loader(file: Path) -> dict[str, Any]:
+    if sys.version_info >= (3, 11):
+        from tomllib import load as toml_load
+    else:
+        from tomli import load as toml_load
+    with open(file, "rb") as f:
+        return toml_load(f)
+
+
+CONFIG_LOADER = {
+    "json": json_loader,
+    "yaml": yaml_loader,
+    "yml": yaml_loader,
+    "toml": toml_loader,
+}
 
 
 class CommandParser:
     def __init__(self, fields: list[Field], config: Config) -> None:
+        self.config = config
         self.arguments: dict[str, Any] = {}
         self.known_keys: set[str] = set()
         self.unknown_fields: list[str] = []
+        self.updated_by_env: list[str] = []
+        self.updated_by_conf: list[str] = []
         self.short_key_map: dict[str, str] = {}
         self.key_type_map: dict[str, type] = {}
 
@@ -21,13 +55,44 @@ class CommandParser:
             if field.short:
                 self.short_key_map[field.short] = field.name
                 self.key_type_map[field.short] = field.field_type
+            if field.default is not NODEFAULT:
+                self.arguments[field.name] = field.default
+            elif field.default_factory is not NODEFAULT:
+                self.arguments[field.name] = field.default_factory()
 
     def normalize(self, key: str, is_short_key: bool = False) -> str:
         if is_short_key:
             return self.short_key_map[key]
         return key.replace("-", "_")
 
+    def load_env(self):
+        if not self.config.from_env:
+            return
+        for key in self.arguments:
+            env_key = (
+                key
+                if not self.config.env_prefix
+                else f"{self.config.env_prefix}_{key.upper()}"
+            )
+            if env_key in environ:
+                self.arguments[key] = environ[env_key]
+                self.updated_by_env.append(key)
+
+    def load_config_file(self):
+        if not self.config.config_file:
+            return
+        file = Path(self.config.config_file)
+        if not file.is_file():
+            return
+        config = CONFIG_LOADER[file.suffix[1:]](file)
+        for key in self.arguments:
+            if key in config:
+                self.arguments[key] = config[key]
+                self.updated_by_conf.append(key)
+
     def parse(self, args: Optional[list[str]] = None):  # noqa: PLR0912
+        self.load_env()
+        self.load_config_file()
         if args is None:
             args = sys.argv[1:]
 

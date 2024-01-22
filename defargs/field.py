@@ -66,4 +66,3 @@ class Config:
     config_file: Optional[str] = None
     from_env: bool = False
     env_prefix: Optional[str] = None
-
